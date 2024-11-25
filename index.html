@@ -1,0 +1,176 @@
+<!-- Bagian HTML -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mau Masak Apa Hari Ini?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            margin: 20px auto;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 15px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 15px 20px;
+            font-size: 1em;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .error {
+            color: #ff4d4d;
+            margin-top: 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            text-align: left;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Mau Masak Apa Hari Ini?</h1>
+        <div class="input-container">
+            <input type="text" id="foodInput" placeholder="Masukkan nama makanan di sini">
+            <button id="searchButton">Cari</button>
+        </div>
+        <div class="result" id="resultContainer">
+            <h2>Hasil Resep</h2>
+            <p id="recipe"></p>
+            <h3>Bahan-Bahan:</h3>
+            <ul id="ingredientsList"></ul>
+            <h3>Total Harga: <span id="totalPrice">0</span></h3>
+            <button id="buyButton" style="margin-top: 20px; display: none;">Beli Semua Barang</button>
+        </div>
+        <p class="error" id="error"></p>
+    </div>
+
+    <script>
+        async function fetchRecipe(foodName) {
+            const resultContainer = document.getElementById("resultContainer");
+            const errorContainer = document.getElementById("error");
+            const buyButton = document.getElementById("buyButton");
+            const totalPrice = document.getElementById("totalPrice");
+
+            resultContainer.style.display = "none";
+            errorContainer.textContent = "";
+            buyButton.style.display = "none";
+
+            if (!foodName) {
+                errorContainer.textContent = "Silakan masukkan nama makanan.";
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/get_recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ makanan: foodName })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Terjadi kesalahan.");
+                }
+
+                const data = await response.json();
+
+                document.getElementById("recipe").textContent = "Judul Resep: " + data.judul;
+
+                const ingredientsList = document.getElementById("ingredientsList");
+                ingredientsList.innerHTML = ""; 
+
+                let totalHarga = 0;
+                data.bahan.forEach(item => {
+                    const li = document.createElement("li");
+                    li.textContent = `${item.nama} (${item.jumlah} ${item.satuan}) - Harga: Rp ${item.harga_estimasi}`;
+                    ingredientsList.appendChild(li);
+                    totalHarga += item.harga_estimasi * item.jumlah;
+                });
+
+                totalPrice.textContent = totalHarga;
+
+                resultContainer.style.display = "block";
+                buyButton.style.display = "block";
+
+                buyButton.onclick = () => buyIngredients(data.bahan);
+            } catch (error) {
+                errorContainer.textContent = error.message;
+            }
+        }
+
+        document.getElementById("searchButton").addEventListener("click", function () {
+            const foodName = document.getElementById("foodInput").value.trim();
+            fetchRecipe(foodName);
+        });
+    </script>
+</body>
+
+</html>
