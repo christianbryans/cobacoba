@@ -1,11 +1,10 @@
-<!-- Bagian HTML -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mau Masak Apa Hari Ini?</title>
+    <title>What to Cook Today?</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -94,18 +93,18 @@
 
 <body>
     <div class="container">
-        <h1>Mau Masak Apa Hari Ini?</h1>
+        <h1>What to Cook Today?</h1>
         <div class="input-container">
-            <input type="text" id="foodInput" placeholder="Masukkan nama makanan di sini">
-            <button id="searchButton">Cari</button>
+            <input type="text" id="foodInput" placeholder="Enter food name here">
+            <button id="searchButton">Search</button>
         </div>
         <div class="result" id="resultContainer">
-            <h2>Hasil Resep</h2>
+            <h2>Recipe Result</h2>
             <p id="recipe"></p>
-            <h3>Bahan-Bahan:</h3>
+            <h3>Ingredients:</h3>
             <ul id="ingredientsList"></ul>
-            <h3>Total Harga: <span id="totalPrice">0</span></h3>
-            <button id="buyButton" style="margin-top: 20px; display: none;">Beli Semua Barang</button>
+            <h3>Total Price: <span id="totalPrice">0</span></h3>
+            <button id="buyButton" style="margin-top: 20px; display: none;">Buy All Items</button>
         </div>
         <p class="error" id="error"></p>
     </div>
@@ -122,7 +121,7 @@
             buyButton.style.display = "none";
 
             if (!foodName) {
-                errorContainer.textContent = "Silakan masukkan nama makanan.";
+                errorContainer.textContent = "Please enter a food name.";
                 return;
             }
 
@@ -137,12 +136,12 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || "Terjadi kesalahan.");
+                    throw new Error(errorData.message || "An error occurred.");
                 }
 
                 const data = await response.json();
 
-                document.getElementById("recipe").textContent = "Judul Resep: " + data.judul;
+                document.getElementById("recipe").textContent = "Recipe Title: " + data.judul;
 
                 const ingredientsList = document.getElementById("ingredientsList");
                 ingredientsList.innerHTML = ""; 
@@ -150,7 +149,7 @@
                 let totalHarga = 0;
                 data.bahan.forEach(item => {
                     const li = document.createElement("li");
-                    li.textContent = `${item.nama} (${item.jumlah} ${item.satuan}) - Harga: Rp ${item.harga_estimasi}`;
+                    li.textContent = `${item.nama} (${item.jumlah} ${item.satuan}) - Price: Rp ${item.harga_estimasi}`;
                     ingredientsList.appendChild(li);
                     totalHarga += item.harga_estimasi * item.jumlah;
                 });
